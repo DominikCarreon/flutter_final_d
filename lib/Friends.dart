@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'ChatPage.dart'; // Ensure this import is correct
+import 'ChatPage.dart'; 
 
 class FriendsPage extends StatefulWidget {
   const FriendsPage({super.key});
@@ -13,7 +13,7 @@ class _FriendsPageState extends State<FriendsPage> {
   final _supabase = Supabase.instance.client;
   String _searchQuery = "";
 
-  // 1. ADD FRIEND DIALOG
+
   Future<void> _showAddFriendDialog() async {
     final nameController = TextEditingController();
     final roleController = TextEditingController();
@@ -42,7 +42,7 @@ class _FriendsPageState extends State<FriendsPage> {
     );
   }
 
-  // 2. EDIT FRIEND DIALOG
+
   Future<void> _showEditFriendDialog(Map<String, dynamic> friend) async {
     final nameController = TextEditingController(text: friend['name']);
     final roleController = TextEditingController(text: friend['role']);
@@ -71,7 +71,7 @@ class _FriendsPageState extends State<FriendsPage> {
     );
   }
 
-  // 3. DELETE FRIEND FUNCTION
+
   Future<void> _deleteFriend(int id) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -98,7 +98,7 @@ class _FriendsPageState extends State<FriendsPage> {
     }
   }
 
-  // Helper widget to avoid duplicate dialog code
+
   Widget _buildDialog(BuildContext context, {
     required String title, 
     required TextEditingController nameController, 

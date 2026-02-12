@@ -61,11 +61,11 @@ class SettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final Color tileColor = isDark ? const Color(0xFF1E1E1E) : (Colors.grey[200] ?? Colors.grey);
-    // Ensure title color is visible in both modes
+
     final Color titleColor = isDark ? Colors.white : Colors.black;
 
     return Scaffold(
-      backgroundColor: Colors.transparent, // Transparent to show gradient
+      backgroundColor: Colors.transparent, 
       appBar: AppBar(
         title: Text("Settings", style: TextStyle(fontWeight: FontWeight.bold, color: titleColor)), 
         backgroundColor: Colors.transparent,

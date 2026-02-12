@@ -11,7 +11,6 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   await Supabase.initialize(
-    // I kept your credentials here so it works immediately for you
     url: 'https://jfatjhfczazwdiyhavwt.supabase.co', 
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpmYXRqaGZjemF6d2RpeWhhdnd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4MzE3MDUsImV4cCI6MjA4NjQwNzcwNX0.kUNoBPIj7CnkVFUehlFg6BlEGpqXoqpiQd51529GGK8', 
   );
@@ -90,7 +89,6 @@ class _MainNavigationState extends State<MainNavigation> {
 
   @override
   Widget build(BuildContext context) {
-    // FIX: Structure was broken here. I fixed the list logic.
     final List<Widget> pages = [
       _isEditing 
           ? EditProfilePage(
@@ -209,20 +207,17 @@ class ViewProfilePage extends StatelessWidget {
           ),
           const SizedBox(height: 32),
           
-          // --- STATS ROW UPDATED ---
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _statBox("69", "Publish Projects", textColor, subTextColor),
               
-              // FIX: REAL-TIME CONNECTION COUNT FROM SUPABASE
+              // REAL-TIME CONNECTION COUNT
               StreamBuilder<List<Map<String, dynamic>>>(
-                // This listens to the database in real-time
                 stream: Supabase.instance.client.from('friends').stream(primaryKey: ['id']),
                 builder: (context, snapshot) {
                   String count = "..."; 
                   if (snapshot.hasData) {
-                    // Counts the actual number of friends in your database
                     count = snapshot.data!.length.toString();
                   }
                   return _statBox(count, "Connections", textColor, subTextColor);
@@ -232,7 +227,6 @@ class ViewProfilePage extends StatelessWidget {
               _statBox("420", "Followers", textColor, subTextColor),
             ],
           ),
-          // -------------------------
 
           const SizedBox(height: 32),
           
@@ -343,6 +337,75 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
   }
 
+  // ✅ NEW: Alert Dialog for Saving
+  Future<void> _handleSave() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).cardColor,
+        title: const Text("Save Changes?"),
+        content: const Text("Are you sure you want to update your profile?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false), // No
+            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true), // Yes
+            child: const Text("Save", style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      widget.onSave({
+        'name': nameController.text,
+        'title': titleController.text,
+        'bio': bioController.text,
+        'location': locationController.text,
+        'skills': skillsController.text, 
+        'games': gamesController.text,   
+        'imagePath': _selectedImagePath ?? '',
+      });
+    }
+  }
+
+
+  Future<void> _handleDeleteData() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).cardColor,
+        title: const Text("Delete Profile Data?", style: TextStyle(color: Colors.red)),
+        content: const Text("This will clear all your profile fields. This action cannot be undone."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Delete", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      setState(() {
+        nameController.clear();
+        titleController.clear();
+        bioController.clear();
+        locationController.clear();
+        skillsController.clear();
+        gamesController.clear();
+        _selectedImagePath = '';
+      });
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Profile data cleared.")));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -357,7 +420,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.transparent, // Update here for gradient
+      backgroundColor: Colors.transparent, 
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -366,6 +429,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
           onPressed: widget.onCancel
         ),
         title: Text("Edit Profile", style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
+        actions: [
+
+            IconButton(
+                icon: const Icon(Icons.delete_outline, color: Colors.red),
+                onPressed: _handleDeleteData,
+            )
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -397,16 +467,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
             _editField("Games (comma separated)", gamesController, fieldFillColor, textColor),
 
             const SizedBox(height: 40),
+            
+
             GestureDetector(
-              onTap: () => widget.onSave({
-                'name': nameController.text,
-                'title': titleController.text,
-                'bio': bioController.text,
-                'location': locationController.text,
-                'skills': skillsController.text, 
-                'games': gamesController.text,   
-                'imagePath': _selectedImagePath ?? '',
-              }),
+              onTap: _handleSave, 
               child: Container(
                 height: 55,
                 width: double.infinity,

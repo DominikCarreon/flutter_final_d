@@ -34,13 +34,13 @@ class _MainNavigationState extends State<MainNavigation> {
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
-      if (index != 0) _isEditing = false; // Reset edit state if leaving profile
+      if (index != 0) _isEditing = false; 
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // Logic to decide which view to show in the Profile Tab
+
     Widget profileTab = _isEditing 
       ? EditProfilePage(onBack: () => setState(() => _isEditing = false)) 
       : ViewProfilePage(onEdit: () => setState(() => _isEditing = true));
@@ -77,7 +77,7 @@ class _MainNavigationState extends State<MainNavigation> {
   }
 }
 
-// --- VIEW PROFILE PAGE ---
+
 class ViewProfilePage extends StatelessWidget {
   final VoidCallback onEdit;
   const ViewProfilePage({super.key, required this.onEdit});
@@ -88,7 +88,7 @@ class ViewProfilePage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
       child: Column(
         children: [
-          // Profile Avatar with Glow Effect
+
           Center(
             child: Container(
               padding: const EdgeInsets.all(3),
