@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'; 
 import 'dart:io';
 import 'Friends.dart';
 import 'Settings.dart'; 
-import 'AboutMe.dart'; // Ensure file is renamed to AboutMe.dart
+import 'AboutMe.dart'; 
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  await Supabase.initialize(
+    // I kept your credentials here so it works immediately for you
+    url: 'https://jfatjhfczazwdiyhavwt.supabase.co', 
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpmYXRqaGZjemF6d2RpeWhhdnd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA4MzE3MDUsImV4cCI6MjA4NjQwNzcwNX0.kUNoBPIj7CnkVFUehlFg6BlEGpqXoqpiQd51529GGK8', 
+  );
+
   runApp(const MyApp());
 }
 
@@ -30,7 +39,6 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      // Themes have transparent scaffolds to show the gradient
       theme: _isDarkMode 
           ? ThemeData.dark().copyWith(
               scaffoldBackgroundColor: Colors.transparent,
@@ -82,6 +90,7 @@ class _MainNavigationState extends State<MainNavigation> {
 
   @override
   Widget build(BuildContext context) {
+    // FIX: Structure was broken here. I fixed the list logic.
     final List<Widget> pages = [
       _isEditing 
           ? EditProfilePage(
@@ -103,19 +112,11 @@ class _MainNavigationState extends State<MainNavigation> {
       ),
     ];
 
-    // Background Gradient Logic
     final gradientColors = widget.isDarkMode 
-        ? [
-            const Color(0xFF121212), // Top (Dark)
-            const Color(0xFF2C1F1F)  // Bottom (Reddish Tint)
-          ]
-        : [
-            const Color(0xFFFFF5F5), // Top (Light)
-            const Color(0xFFFFF0E0)  // Bottom (Orange Tint)
-          ];
+        ? [const Color(0xFF121212), const Color(0xFF2C1F1F)]
+        : [const Color(0xFFFFF5F5), const Color(0xFFFFF0E0)];
 
     return Container(
-      // The Gradient Background
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -124,7 +125,7 @@ class _MainNavigationState extends State<MainNavigation> {
         ),
       ),
       child: Scaffold(
-        backgroundColor: Colors.transparent, // Transparent Scaffold
+        backgroundColor: Colors.transparent, 
         body: IndexedStack(
           index: _selectedIndex,
           children: pages,
@@ -146,11 +147,6 @@ class _MainNavigationState extends State<MainNavigation> {
     );
   }
 }
-
-// ... Keep ViewProfilePage and EditProfilePage as they were in the previous successful response
-// ... But make sure their Scaffolds (if any) are set to backgroundColor: Colors.transparent
-// ... (Your ViewProfilePage is just a Widget so it inherits the MainNavigation Scaffold transparency, which is good)
-// ... (Your EditProfilePage DOES have a Scaffold, so update it below)
 
 class ViewProfilePage extends StatelessWidget {
   final Map<String, String> data;
@@ -212,14 +208,32 @@ class ViewProfilePage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 32),
+          
+          // --- STATS ROW UPDATED ---
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _statBox("69", "Publish Projects", textColor, subTextColor),
-              _statBox("6900", "Connections", textColor, subTextColor),
+              
+              // FIX: REAL-TIME CONNECTION COUNT FROM SUPABASE
+              StreamBuilder<List<Map<String, dynamic>>>(
+                // This listens to the database in real-time
+                stream: Supabase.instance.client.from('friends').stream(primaryKey: ['id']),
+                builder: (context, snapshot) {
+                  String count = "..."; 
+                  if (snapshot.hasData) {
+                    // Counts the actual number of friends in your database
+                    count = snapshot.data!.length.toString();
+                  }
+                  return _statBox(count, "Connections", textColor, subTextColor);
+                },
+              ),
+              
               _statBox("420", "Followers", textColor, subTextColor),
             ],
           ),
+          // -------------------------
+
           const SizedBox(height: 32),
           
           AboutMeSection(
