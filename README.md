@@ -16,6 +16,7 @@ This mobile application is a custom-built personal portfolio developed using the
 •	Navigation & User Flow: Implements smooth transitions between the Profile, Friends, and Settings tabs, with sub-navigation to Chat interfaces.
 •	Theme Management: Includes a Toggle switch in Settings to change between Dark Mode (Red/Black aesthetic) and Light Mode.
 4. Visual Documentation (Screenshots)
+   
 A. Home & Profile Overview
 The landing page features a gradient background with a responsive profile layout. It displays key statistics which pull live data from the backend to show the exact number of connections.
  
